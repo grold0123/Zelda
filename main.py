@@ -1,7 +1,12 @@
-import pygame
+import pygame,pathlib
 pygame.init()
-pygame.display.set_mode((1280,720),pygame.RESIZABLE)
+pygame.display.set_mode((640,480),pygame.RESIZABLE)
 class Level:
+    #   ---------------
+    #   CLASS CONSTANTS
+    #   ---------------
+    STONE = 'x'
+    PLAYER = 'p'
     #   ---------------
     #   CLASS VARIABLES
     #   ---------------
@@ -39,27 +44,83 @@ class Level:
             for obj in cls.visibleSprites
         ]
         display.blits(args)
+    @classmethod
+    def createMap(cls):
+        for rowIndex,row in enumerate(cls.worldMap):
+            for colIndex,element in enumerate(row):
+                x = colIndex * GameObject.tileSize
+                y = rowIndex * GameObject.tileSize
+                pos = x,y
+                if element == 'x':
+                    Tile(pos,[Level.visibleSprites,Level.obstacleSprites])
+                if element == 'p':
+                    Player(pos,[Level.visibleSprites])
     #   ---------------
     #   CLASS INSTANCE
     #   ---------------
     def __init__(self):
+        Level.createMap()
+class Helpers:
+    def loadSurfaces(fileDir:str):
+        dirPath = pathlib.Path(fileDir)
+        l = []
+        for path in dirPath.glob('*.png'):
+            surface = pygame.image.load(path).convert_alpha()
+            l.append(surface)
+        return l
+class Assets:            
+    class Surface:       
+        class Objects:            
+            grasses = Helpers.loadSurfaces('assets/graphics/grass')
+        class Monsters:
+            class Bamboo:
+                attack = Helpers.loadSurfaces('assets/graphics/bamboo/attack')
+                idle = Helpers.loadSurfaces('assets/graphics/bamboo/idle'),
+                move = Helpers.loadSurfaces('assets/graphics/bamboo/move'),
+            class Racoon:
+                attack = Helpers.loadSurfaces('assets/graphics/racoon/attack')                                    
+                idle = Helpers.loadSurfaces('assets/graphics/racoon/idle')
+                move = Helpers.loadSurfaces('assets/graphics/racoon/move')
+            class Spirit:
+                attack = Helpers.loadSurfaces('assets/graphics/spirit/attack')                                    
+                idle = Helpers.loadSurfaces('assets/graphics/spirit/idle')
+                move = Helpers.loadSurfaces('assets/graphics/spirit/move')
+            class Squid:
+                attack = Helpers.loadSurfaces('assets/graphics/squid/attack')                                    
+                idle = Helpers.loadSurfaces('assets/graphics/squid/idle')
+                move = Helpers.loadSurfaces('assets/graphics/squid/move')
+
+    def __init__(self):
         pass
-class GameObject:
+class GameObject:        
     #   ---------------
     #   CLASS VARIABLES
     #   ---------------
     tileSize = 64
     #   ---------------
+    #   ---------------
+    #   CLASS METHODS
+    #   ---------------    
     #   CLASS INSTANCE
     #   ---------------
-    def __init__(self,pos,group):
+    def __init__(self,pos,group:list):
         self.image = pygame.Surface((30,30))
         self.rect = self.image.get_frect(topleft = pos)
         if Level.visibleSprites in group:
             Level.visibleSprites.append(self)
         if Level.obstacleSprites in group:
-            Level.obstacleSprites.append(self)
-
+            Level.obstacleSprites.append(self)    
+    
+class Player(GameObject):
+    def __init__(self, pos, group=[Level.visibleSprites]):
+        super().__init__(pos, group)
+        self.image = pygame.image.load('assets/graphics/test/player.png')
+        self.rect = self.image.get_rect(topleft = pos)
+class Tile(GameObject):
+    def __init__(self, pos, group=[Level.visibleSprites,Level.obstacleSprites]):
+        super().__init__(pos, group)
+        self.image = pygame.image.load('assets/graphics/test/rock.png')
+        self.rect = self.image.get_rect(topleft = pos)
 class Application:
     #   -----------------
     #   CLASS CONSTANTS
@@ -121,7 +182,9 @@ class Application:
                     Application.display.blit(Application.createStartScreen(),(0,0))
                 case Application.RUNNING: 
                     Application.display.fill('white')
+                    Level.draw(Application.display)
                 case Application.QUIT: break            
+            
             pygame.display.flip()
     def pollEvent(self):
         for event in pygame.event.get():
