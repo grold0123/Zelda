@@ -1,201 +1,132 @@
-import pygame,pathlib
+import pygame
 pygame.init()
 pygame.display.set_mode((640,480),pygame.RESIZABLE)
-class Level:
-    #   ---------------
-    #   CLASS CONSTANTS
-    #   ---------------
-    STONE = 'x'
-    PLAYER = 'p'
-    #   ---------------
-    #   CLASS VARIABLES
-    #   ---------------
-    visibleSprites = []
-    obstacleSprites = []
-    worldMap = [
-        ['x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x'],
-        ['x',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','x'],
-        ['x',' ','p',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','x'],
-        ['x',' ',' ','x',' ',' ',' ',' ',' ','x','x','x','x','x',' ',' ',' ',' ',' ','x'],
-        ['x',' ',' ','x',' ',' ',' ',' ',' ',' ',' ',' ',' ','x',' ',' ',' ',' ',' ','x'],
-        ['x',' ',' ','x',' ',' ',' ',' ',' ',' ',' ',' ',' ','x',' ',' ',' ',' ',' ','x'],
-        ['x',' ',' ','x',' ',' ',' ',' ',' ',' ',' ',' ',' ','x',' ',' ',' ',' ',' ','x'],
-        ['x',' ',' ','x',' ',' ',' ',' ',' ',' ',' ',' ',' ','x',' ',' ',' ',' ',' ','x'],
-        ['x',' ',' ','x',' ',' ',' ',' ',' ',' ',' ',' ',' ','x',' ',' ',' ',' ',' ','x'],
-        ['x',' ',' ','x',' ',' ',' ',' ',' ',' ',' ',' ',' ','x',' ',' ',' ',' ',' ','x'],
-        ['x',' ',' ','x',' ',' ',' ',' ',' ',' ',' ',' ',' ','x',' ',' ',' ',' ',' ','x'],
-        ['x',' ',' ','x',' ',' ',' ',' ',' ',' ',' ',' ',' ','x','x','x',' ',' ',' ','x'],
-        ['x',' ',' ',' ',' ',' ',' ','x',' ','x',' ',' ',' ',' ',' ',' ',' ',' ',' ','x'],
-        ['x',' ',' ',' ',' ',' ','x','x','x','x','x',' ',' ',' ',' ',' ',' ',' ',' ','x'],
-        ['x',' ',' ',' ',' ',' ',' ','x','x','x',' ',' ',' ',' ',' ',' ',' ',' ',' ','x'],
-        ['x',' ',' ',' ',' ',' ',' ',' ','x',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','x'],
-        ['x',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','x'],
-        ['x',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','x'],
-        ['x',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','x'],
-        ['x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x'],
-    ]
-    #   ---------------
-    #   CLASS METHODS
-    #   ---------------
-    @classmethod
-    def draw(cls,display:pygame.Surface):
-        args = [
-            (obj.image,obj.rect)
-            for obj in cls.visibleSprites
-        ]
-        display.blits(args)
-    @classmethod
-    def createMap(cls):
-        for rowIndex,row in enumerate(cls.worldMap):
-            for colIndex,element in enumerate(row):
-                x = colIndex * GameObject.tileSize
-                y = rowIndex * GameObject.tileSize
-                pos = x,y
-                if element == 'x':
-                    Tile(pos,[Level.visibleSprites,Level.obstacleSprites])
-                if element == 'p':
-                    Player(pos,[Level.visibleSprites])
-    #   ---------------
-    #   CLASS INSTANCE
-    #   ---------------
-    def __init__(self):
-        Level.createMap()
-class Helpers:
-    def loadSurfaces(fileDir:str):
-        dirPath = pathlib.Path(fileDir)
-        l = []
-        for path in dirPath.glob('*.png'):
-            surface = pygame.image.load(path).convert_alpha()
-            l.append(surface)
-        return l
-class Assets:            
-    class Surface:       
-        class Objects:            
-            grasses = Helpers.loadSurfaces('assets/graphics/grass')
-        class Monsters:
-            class Bamboo:
-                attack = Helpers.loadSurfaces('assets/graphics/bamboo/attack')
-                idle = Helpers.loadSurfaces('assets/graphics/bamboo/idle'),
-                move = Helpers.loadSurfaces('assets/graphics/bamboo/move'),
-            class Racoon:
-                attack = Helpers.loadSurfaces('assets/graphics/racoon/attack')                                    
-                idle = Helpers.loadSurfaces('assets/graphics/racoon/idle')
-                move = Helpers.loadSurfaces('assets/graphics/racoon/move')
-            class Spirit:
-                attack = Helpers.loadSurfaces('assets/graphics/spirit/attack')                                    
-                idle = Helpers.loadSurfaces('assets/graphics/spirit/idle')
-                move = Helpers.loadSurfaces('assets/graphics/spirit/move')
-            class Squid:
-                attack = Helpers.loadSurfaces('assets/graphics/squid/attack')                                    
-                idle = Helpers.loadSurfaces('assets/graphics/squid/idle')
-                move = Helpers.loadSurfaces('assets/graphics/squid/move')
-
+#----------------------
+"""CLASS"""
+class Type:
+    #----------------------
+    """CLASS CONSTANSTS"""
+    #----------------------
+    """CLASS VARIABLES"""        
+    #----------------------
+    """CLASS METHODS"""    
+    #----------------------
+    """CLASS INSTANCE"""
     def __init__(self):
         pass
-class GameObject:        
-    #   ---------------
-    #   CLASS VARIABLES
-    #   ---------------
-    tileSize = 64
-    #   ---------------
-    #   ---------------
-    #   CLASS METHODS
-    #   ---------------    
-    #   CLASS INSTANCE
-    #   ---------------
-    def __init__(self,pos,group:list):
-        self.image = pygame.Surface((30,30))
-        self.rect = self.image.get_frect(topleft = pos)
-        if Level.visibleSprites in group:
-            Level.visibleSprites.append(self)
-        if Level.obstacleSprites in group:
-            Level.obstacleSprites.append(self)    
-    
-class Player(GameObject):
-    def __init__(self, pos, group=[Level.visibleSprites]):
-        super().__init__(pos, group)
-        self.image = pygame.image.load('assets/graphics/test/player.png')
-        self.rect = self.image.get_rect(topleft = pos)
-class Tile(GameObject):
-    def __init__(self, pos, group=[Level.visibleSprites,Level.obstacleSprites]):
-        super().__init__(pos, group)
-        self.image = pygame.image.load('assets/graphics/test/rock.png')
-        self.rect = self.image.get_rect(topleft = pos)
-class Application:
-    #   -----------------
-    #   CLASS CONSTANTS
-    #   -----------------
-    RUNNING = 'running'
-    QUIT = 'quit'
-    START = 'start'
-    #   -----------------
-    #   CLASS VARIABLES
-    #   -----------------
-    display = pygame.display.get_surface()
-    clock = pygame.time.Clock()    
-    name = 'ZELDA'
-    #   -----------------
-    #   CLASS METHODS
-    #   -----------------
+#----------------------
+"""APPLICATION CLASS"""
+class Application:	
+    #-----------------------------
+    """CLASS CONSTANTS"""
+    RUNNING = 'RUNNING'
+    QUIT = 'QUIT'
+    START = 'START'
+    DEBUG = 'DEBUG'
+    #-----------------------------	
+    """CLASS VARIABLES"""
+    fps = 60    
+    name = 'Zelda'
+    clock = pygame.time.Clock()	
+    display = pygame.display.get_surface()		
+    #-----------------------------
+    """CLASS METHODS"""
     @classmethod
-    def createStartScreen(cls):
-        IMAGE = 'image'
+    def debug(cls,information:str,pos:tuple[int,int]=(10,10)):        
+        font = pygame.font.Font(None,20)
+        debugSurface = font.render(information,True,'red','white')
+        debugRect = debugSurface.get_rect(topleft = pos)
+        Application.display.blit(debugSurface,debugRect)
+    def gridLines():
+        width,height = Application.display.get_size()				
+        for y in range(height): # horizontal lines | y values increments 
+            pygame.draw.line(Application.display,'white',(0,y*25),(width,y*25))
+        for x in range(width): # vertical lines | x values increments 
+            pygame.draw.line(Application.display,'white',(x*25,0),(x*25,height))					
+    def startScreen():
+        GAMETITLE = 'game title'
+        GAMETITLE2 = 'game title 2'
+        PROMPT = 'prompt'
+        SURFACE = 'surface'
         RECT = 'rect'
-        temp = pygame.Surface(pygame.display.get_window_size(),pygame.SRCALPHA)
-        bigFont = pygame.font.Font(None,120)
-        smallFont = pygame.font.Font(None,30)        
-        smalleseFont = pygame.font.Font(None,20)        
-        gameTitle = {}
-        gameTitle2 = {}
-        promptText = {}
-        gameTitle[IMAGE] = bigFont.render('ZELDA',True,'RED')
-        gameTitle[RECT] = gameTitle[IMAGE].get_rect(center = temp.get_rect().center)
-        gameTitle[RECT].y -= 20
-        gameTitle2[IMAGE] = smallFont.render('made in pygame',True,'white')
-        gameTitle2[RECT] = gameTitle2[IMAGE].get_rect(center = temp.get_rect().center)
-        gameTitle2[RECT].y += 20
-        promptText[IMAGE] = smalleseFont.render('Press Enter to start game',True,'dark gray')
-        promptText[RECT] = promptText[IMAGE].get_rect(center = temp.get_rect().center)
-        promptText[RECT].y += 100
-        temp.blits([
-            (gameTitle[IMAGE],gameTitle[RECT]),
-            (gameTitle2[IMAGE],gameTitle2[RECT]),
-            (promptText[IMAGE],promptText[RECT])
-            ])
-        return temp
-    @classmethod
-    def debugScreen(cls):
-        pass 
-    #   -----------------
-    #   CLASS INSTANCE
-    #   -----------------
-    def __init__(self):
-        pygame.display.set_caption(Application.name)
-        self.level = Level()
+        windowCenter = pygame.display.get_surface().get_rect().center
+        bigFont = pygame.font.Font(None,110)
+        mediumFont = pygame.font.Font(None,20)
+        smallFont = pygame.font.Font(None,25)                
+        texts = {
+            GAMETITLE:{
+                SURFACE:None,
+                RECT:None
+            },
+            GAMETITLE2:{
+                SURFACE:None,
+                RECT:None,
+            },
+            PROMPT:{
+                SURFACE:None,
+                RECT:None,
+            }
+        }
+
+        texts[GAMETITLE][SURFACE] = bigFont.render(Application.name,True,'red')
+        texts[GAMETITLE][RECT] = texts[GAMETITLE][SURFACE].get_rect(center = windowCenter)
+
+        texts[GAMETITLE2][SURFACE] = mediumFont.render('made in pygame',True,'white')
+        texts[GAMETITLE2][RECT] = texts[GAMETITLE2][SURFACE].get_rect(center = windowCenter)
+
+        texts[PROMPT][SURFACE] = smallFont.render('Press Enter to start game',True,'dark gray')
+        texts[PROMPT][RECT] = texts[PROMPT][SURFACE].get_rect(center = windowCenter)
+      
+        texts[GAMETITLE][RECT].y -= 20
+        texts[GAMETITLE2][RECT].y += 20
+        texts[PROMPT][RECT].y += 90
+
+        Application.display.blits([
+            (texts[GAMETITLE][SURFACE],texts[GAMETITLE][RECT]),
+            (texts[GAMETITLE2][SURFACE],texts[GAMETITLE2][RECT]),
+            (texts[PROMPT][SURFACE],texts[PROMPT][RECT])
+        ])
+    #-----------------------------
+    """CLASS INSTANCE"""
+    def __init__(self):		  		
+        pygame.display.set_caption('Zelda')		
         self.state = Application.START
-    def update(self):
-        while True:
-            self.pollEvent()    
-            match self.state:
-                case Application.START : 
-                    Application.display.fill('black')
-                    Application.display.blit(Application.createStartScreen(),(0,0))
-                case Application.RUNNING: 
-                    Application.display.fill('white')
-                    Level.draw(Application.display)
-                case Application.QUIT: break            
-            
-            pygame.display.flip()
-    def pollEvent(self):
+        self.systemMsg = ''
+    def pollevent(self):
         for event in pygame.event.get():
-            match event.type :
-                case pygame.QUIT: self.state = Application.QUIT
+            match event.type:
+                case pygame.QUIT : self.state = Application.QUIT
                 case pygame.KEYDOWN:
                     match event.key:
-                        case pygame.K_RETURN:
+                        case pygame.K_RETURN: 
                             if self.state == Application.START: self.state = Application.RUNNING
-                        
-if __name__ == "__main__":
+                        case pygame.K_F1: 
+                            if self.state == Application.DEBUG: self.state = Application.RUNNING
+                            elif self.state != Application.DEBUG and self.state == Application.RUNNING:
+                                self.state = Application.DEBUG
+                                self.systemMsg = 'Entered DEBUG mode'
+                case pygame.VIDEORESIZE: Application.display = pygame.display.set_mode(event.size,pygame.RESIZABLE)
+    def update(self):
+        while True:
+            self.pollevent()
+            match self.state:
+                case Application.QUIT: break
+                case Application.START:
+                    Application.display.fill('black')
+                    Application.startScreen()
+                case Application.RUNNING:                    			
+                    Application.display.fill('white')
+                case Application.DEBUG:
+                    Application.display.fill('blue')
+                    Application.gridLines()
+                    Application.debug(self.systemMsg)
+            pygame.display.flip()			
+#----------------------
+"""MAIN FUNCTION"""
+def main():
     game = Application()
     game.update()
     pygame.quit()
+#----------------------
+if __name__ == '__main__':
+    main()
