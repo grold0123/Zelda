@@ -1,132 +1,209 @@
-import pygame
+import pygame 
 pygame.init()
 pygame.display.set_mode((640,480),pygame.RESIZABLE)
-#----------------------
-"""CLASS"""
-class Type:
-    #----------------------
-    """CLASS CONSTANSTS"""
-    #----------------------
-    """CLASS VARIABLES"""        
-    #----------------------
-    """CLASS METHODS"""    
-    #----------------------
-    """CLASS INSTANCE"""
+
+#--------------------------------------------------
+"""SURFACE CLASS"""
+class Surface:
+    #----------------------------------------------
+    """VARIABLES"""
+    display = pygame.display.get_surface()
+    testRock = pygame.image.load('assets/graphics/test/rock.png')
+    testPlayer = pygame.image.load('assets/graphics/test/player.png')
+#--------------------------------------------------
+"""TILE CLASS"""
+class Tile(pygame.sprite.Sprite):    
+    def __init__(self,pos,*groups):
+        super().__init__(*groups)
+        self.image = Surface.testRock
+        self.rect = self.image.get_rect(topleft = pos)
+#--------------------------------------------------
+"""PLAYER CLASS"""
+class Player(pygame.sprite.Sprite):
+    HORIZONTAL = 'horizontal'
+    VERTICAL = 'vertical'
+    def __init__(self,pos,*groups):
+        super().__init__(*groups)
+        self.image = Surface.testPlayer
+        self.rect = self.image.get_rect(topleft = pos)        
+        self.speed = 10      
+    def input(self):
+        keyState = pygame.key.get_pressed()
+        self.direction = pygame.math.Vector2()
+        if keyState[pygame.K_UP]: self.direction.y = -1
+        elif keyState[pygame.K_DOWN]: self.direction.y = 1
+        if keyState[pygame.K_RIGHT]: self.direction.x = 1
+        elif keyState[pygame.K_LEFT]: self.direction.x = -1
+    def move(self):
+        if self.direction.magnitude() != 0: self.direction = self.direction.normalize()
+        self.rect.x += self.direction.x * self.speed 
+        self.collision(Player.HORIZONTAL)
+        self.rect.y += self.direction.y * self.speed 
+        self.collision(Player.VERTICAL)
+    def collision(self,direction):
+        if direction == Player.HORIZONTAL:
+            for sprite in Level.obstacleSprites:
+                if sprite.rect.colliderect(self.rect):
+                    if self.direction.x > 0: self.rect.right = sprite.rect.left
+                    elif self.direction.x < 0: self.rect.left = sprite.rect.right
+        elif direction == Player.VERTICAL:
+            for sprite in Level.obstacleSprites:
+                if sprite.rect.colliderect(self.rect):
+                    if self.direction.y > 0: self.rect.bottom = sprite.rect.top
+                    if self.direction.y < 0: self.rect.top = sprite.rect.bottom
+    def update(self):
+        self.input()
+        self.move()
+#--------------------------------------------------
+"""LEVEL CLASS"""
+class Level:
+    tileSize = 64
+    worldMap = [
+        ['x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x'],
+        ['x',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','x'],
+        ['x',' ','p',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','x'],
+        ['x',' ',' ','x',' ',' ',' ',' ',' ','x','x','x','x','x',' ',' ',' ',' ',' ','x'],
+        ['x',' ',' ','x',' ',' ',' ',' ',' ',' ',' ',' ',' ','x',' ',' ',' ',' ',' ','x'],
+        ['x',' ',' ','x',' ',' ',' ',' ',' ',' ',' ',' ',' ','x',' ',' ',' ',' ',' ','x'],
+        ['x',' ',' ','x',' ',' ',' ',' ',' ',' ',' ',' ',' ','x',' ',' ',' ',' ',' ','x'],
+        ['x',' ',' ','x',' ',' ',' ',' ',' ',' ',' ',' ',' ','x',' ',' ',' ',' ',' ','x'],
+        ['x',' ',' ','x',' ',' ',' ',' ',' ',' ',' ',' ',' ','x',' ',' ',' ',' ',' ','x'],
+        ['x',' ',' ','x',' ',' ',' ',' ',' ',' ',' ',' ',' ','x',' ',' ',' ',' ',' ','x'],
+        ['x',' ',' ','x',' ',' ',' ',' ',' ',' ',' ',' ',' ','x',' ',' ',' ',' ',' ','x'],
+        ['x',' ',' ','x',' ',' ',' ',' ',' ',' ',' ',' ',' ','x','x','x',' ',' ',' ','x'],
+        ['x',' ',' ',' ',' ',' ',' ','x',' ','x',' ',' ',' ',' ',' ',' ',' ',' ',' ','x'],
+        ['x',' ',' ',' ',' ',' ','x','x','x','x','x',' ',' ',' ',' ',' ',' ',' ',' ','x'],
+        ['x',' ',' ',' ',' ',' ',' ','x','x','x',' ',' ',' ',' ',' ',' ',' ',' ',' ','x'],
+        ['x',' ',' ',' ',' ',' ',' ',' ','x',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','x'],
+        ['x',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','x'],
+        ['x',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','x'],
+        ['x',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','x'],
+        ['x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x','x'],
+    ]
+    visibleSprites = pygame.sprite.Group()
+    obstacleSprites = pygame.sprite.Group()
+    player = None
     def __init__(self):
-        pass
-#----------------------
+        self.createMap()
+    def createMap(self):
+        for rowIndex,row in enumerate(Level.worldMap):
+            for colIndex,col in enumerate(row):
+                x = colIndex * Level.tileSize
+                y = rowIndex * Level.tileSize
+                match col:
+                    case 'x': Tile((x,y),[Level.visibleSprites,Level.obstacleSprites])
+                    case 'p': 
+                       Level.player = Player((x,y),[Level.visibleSprites])
+
+    def update(self): 
+        Level.visibleSprites.draw(Surface.display)
+        Level.visibleSprites.update()
+        Application.debug(str(Level.player.direction))
+#--------------------------------------------------
 """APPLICATION CLASS"""
-class Application:	
-    #-----------------------------
-    """CLASS CONSTANTS"""
-    RUNNING = 'RUNNING'
-    QUIT = 'QUIT'
-    START = 'START'
-    DEBUG = 'DEBUG'
-    #-----------------------------	
-    """CLASS VARIABLES"""
-    fps = 60    
+class Application:
+    #----------------------------------------------
+    """CONSTANTS"""
+    RUNNING = 'running'
+    QUIT = 'quit'
+    START = 'start'
+    DEBUG = 'debug'
+    #----------------------------------------------
+    """VARIABLES"""
+    clock = pygame.time.Clock()
     name = 'Zelda'
-    clock = pygame.time.Clock()	
-    display = pygame.display.get_surface()		
-    #-----------------------------
-    """CLASS METHODS"""
+    deltaTime = 0
+    #----------------------------------------------
+    """METHODS"""
     @classmethod
-    def debug(cls,information:str,pos:tuple[int,int]=(10,10)):        
-        font = pygame.font.Font(None,20)
+    def debug(cls,information,pos:tuple[int,int]=(20,20)):
+        font = pygame.font.Font(None,25)
         debugSurface = font.render(information,True,'red','white')
         debugRect = debugSurface.get_rect(topleft = pos)
-        Application.display.blit(debugSurface,debugRect)
-    def gridLines():
-        width,height = Application.display.get_size()				
-        for y in range(height): # horizontal lines | y values increments 
-            pygame.draw.line(Application.display,'white',(0,y*25),(width,y*25))
-        for x in range(width): # vertical lines | x values increments 
-            pygame.draw.line(Application.display,'white',(x*25,0),(x*25,height))					
-    def startScreen():
-        GAMETITLE = 'game title'
-        GAMETITLE2 = 'game title 2'
-        PROMPT = 'prompt'
-        SURFACE = 'surface'
-        RECT = 'rect'
-        windowCenter = pygame.display.get_surface().get_rect().center
-        bigFont = pygame.font.Font(None,110)
-        mediumFont = pygame.font.Font(None,20)
-        smallFont = pygame.font.Font(None,25)                
-        texts = {
-            GAMETITLE:{
-                SURFACE:None,
-                RECT:None
-            },
-            GAMETITLE2:{
-                SURFACE:None,
-                RECT:None,
-            },
-            PROMPT:{
-                SURFACE:None,
-                RECT:None,
-            }
-        }
+        Surface.display.blit(debugSurface,debugRect)
+    @classmethod
+    def startScreen(cls):
+        center = Surface.display.get_rect().center
+        afont = pygame.font.Font(None,110)
+        bfont = pygame.font.Font(None,20)
+        cfont = pygame.font.Font(None,25)
 
-        texts[GAMETITLE][SURFACE] = bigFont.render(Application.name,True,'red')
-        texts[GAMETITLE][RECT] = texts[GAMETITLE][SURFACE].get_rect(center = windowCenter)
+        aSurface = afont.render(Application.name,True,'Red')
+        aRect = aSurface.get_rect(center = center )
 
-        texts[GAMETITLE2][SURFACE] = mediumFont.render('made in pygame',True,'white')
-        texts[GAMETITLE2][RECT] = texts[GAMETITLE2][SURFACE].get_rect(center = windowCenter)
+        bSurface = bfont.render('made in pygame',True,'white')
+        bRect = bSurface.get_rect(center = center )
 
-        texts[PROMPT][SURFACE] = smallFont.render('Press Enter to start game',True,'dark gray')
-        texts[PROMPT][RECT] = texts[PROMPT][SURFACE].get_rect(center = windowCenter)
-      
-        texts[GAMETITLE][RECT].y -= 20
-        texts[GAMETITLE2][RECT].y += 20
-        texts[PROMPT][RECT].y += 90
+        cSurface = cfont.render('Press Enter to start game',True,'light gray')
+        cRect = cSurface.get_rect(center = center )
 
-        Application.display.blits([
-            (texts[GAMETITLE][SURFACE],texts[GAMETITLE][RECT]),
-            (texts[GAMETITLE2][SURFACE],texts[GAMETITLE2][RECT]),
-            (texts[PROMPT][SURFACE],texts[PROMPT][RECT])
+        aRect.y += -10
+        bRect.y += 25
+        cRect.y += 60
+
+        Surface.display.blits([
+            (aSurface,aRect),
+            (bSurface,bRect),
+            (cSurface,cRect)
         ])
-    #-----------------------------
-    """CLASS INSTANCE"""
-    def __init__(self):		  		
-        pygame.display.set_caption('Zelda')		
+    @classmethod 
+    def drawGrid(cls):
+        offset = 25
+        width,height = Surface.display.get_size()
+        for x in range(width):
+            pygame.draw.line(Surface.display,'white',(x*offset,0),(x*offset,height))
+        for y in range(height):
+            pygame.draw.line(Surface.display,'white',(0,y*offset),(width,y*offset))
+    #----------------------------------------------
+    """INSTANCE"""
+    def __init__(self):
         self.state = Application.START
-        self.systemMsg = ''
-    def pollevent(self):
+        self.sysMsg = ''        
+        pygame.display.set_caption(f"{Application.name} | {self.state}")
+    def handleEvents(self):
         for event in pygame.event.get():
             match event.type:
-                case pygame.QUIT : self.state = Application.QUIT
-                case pygame.KEYDOWN:
+                case pygame.QUIT: self.state = Application.QUIT
+                case pygame.KEYDOWN : 
                     match event.key:
-                        case pygame.K_RETURN: 
-                            if self.state == Application.START: self.state = Application.RUNNING
-                        case pygame.K_F1: 
-                            if self.state == Application.DEBUG: self.state = Application.RUNNING
-                            elif self.state != Application.DEBUG and self.state == Application.RUNNING:
+                        case pygame.K_RETURN:
+                            if self.state == Application.START: 
+                                self.state = Application.RUNNING
+                                pygame.display.set_caption(f"{Application.name} | {self.state}")
+                        case pygame.K_F1:
+                            if self.state != Application.DEBUG and self.state == Application.RUNNING:
                                 self.state = Application.DEBUG
-                                self.systemMsg = 'Entered DEBUG mode'
-                case pygame.VIDEORESIZE: Application.display = pygame.display.set_mode(event.size,pygame.RESIZABLE)
+                                pygame.display.set_caption(f"{Application.name} | {self.state}")
+                                self.sysMsg = 'Entered DEBUG mode'
+                            elif self.state == Application.DEBUG:
+                                self.state = Application.RUNNING
+                                pygame.display.set_caption(f"{Application.name} | {self.state}")
+                                self.sysMsg = ''
     def update(self):
+        level = Level()
         while True:
-            self.pollevent()
+            
+            self.handleEvents()
             match self.state:
-                case Application.QUIT: break
-                case Application.START:
-                    Application.display.fill('black')
+                case Application.QUIT:break 
+                case Application.START: 
+                    Surface.display.fill('black')
                     Application.startScreen()
-                case Application.RUNNING:                    			
-                    Application.display.fill('white')
+                case Application.RUNNING : 
+                    Surface.display.fill('white')                    
+                    level.update()                    
                 case Application.DEBUG:
-                    Application.display.fill('blue')
-                    Application.gridLines()
-                    Application.debug(self.systemMsg)
-            pygame.display.flip()			
-#----------------------
+                    Surface.display.fill('blue')
+                    Application.drawGrid()
+                    Application.debug(self.sysMsg)
+            pygame.display.flip()
+            Application.clock.tick(60)
+#--------------------------------------------------
 """MAIN FUNCTION"""
 def main():
     game = Application()
     game.update()
     pygame.quit()
-#----------------------
-if __name__ == '__main__':
+#--------------------------------------------------
+if __name__ == "__main__":
     main()
